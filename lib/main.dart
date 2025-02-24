@@ -32,10 +32,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    // ✅ Load Video from CloudFront
-    _controller = VideoPlayerController.network(
-      "https://d2zieu8e72yhs3.cloudfront.net/assets/heart_pulse.mp4"
-    )
+    // ✅ Load Video from Netlify (Local Asset)
+    _controller = VideoPlayerController.asset("assets/heart_pulse.mp4")
       ..initialize().then((_) {
         setState(() {});
         _controller.setLooping(true);
@@ -48,9 +46,7 @@ class _HomePageState extends State<HomePage> {
   void _playAudio() async {
     try {
       if (!_isAudioPlaying) {
-        await _audioPlayer.setSource(
-          UrlSource("https://d2zieu8e72yhs3.cloudfront.net/assets/background_music.ogg")
-        );
+        await _audioPlayer.setSource(AssetSource("assets/background_music.ogg"));
         _audioPlayer.setReleaseMode(ReleaseMode.loop);
         await _audioPlayer.resume();
         setState(() {
@@ -79,10 +75,10 @@ class _HomePageState extends State<HomePage> {
         children: [
           // 🔴 Bright Red Background
           Positioned.fill(
-            child: Container(color: Colors.black),
+            child: Container(color: Colors.red),
           ),
 
-          // 🎥 Background Video (CloudFront)
+          // 🎥 Background Video (Using Local Asset)
           Positioned.fill(
             child: _controller.value.isInitialized
                 ? FittedBox(
@@ -110,12 +106,14 @@ class _HomePageState extends State<HomePage> {
                   alignment: Alignment.topCenter,
                   child: Padding(
                     padding: EdgeInsets.all(screenWidth * 0.04),
-                    child: Image.network(
-                      "https://d2zieu8e72yhs3.cloudfront.net/assets/apLogo.png",
+                    child: Image.asset(
+                      "assets/apLogo.png",
                       height: screenWidth * 0.3,
                       errorBuilder: (context, error, stackTrace) {
-                        return Text("Failed to load logo", 
-                          style: TextStyle(color: Colors.red, fontSize: 16));
+                        return Text(
+                          "Failed to load logo",
+                          style: TextStyle(color: Colors.red, fontSize: 16),
+                        );
                       },
                     ),
                   ),
@@ -150,15 +148,16 @@ class _HomePageState extends State<HomePage> {
                           backgroundColor: Colors.yellow,
                           foregroundColor: Colors.black,
                           textStyle: TextStyle(
-                            fontSize: screenWidth * 0.02, 
-                            fontWeight: FontWeight.bold
+                            fontSize: screenWidth * 0.02,
+                            fontWeight: FontWeight.bold,
                           ),
                           padding: EdgeInsets.symmetric(
                             horizontal: screenWidth * 0.02,
                             vertical: screenHeight * 0.01,
                           ),
                         ),
-                        child: Text("PLAY MUSIC", 
+                        child: Text(
+                          "PLAY MUSIC",
                           style: GoogleFonts.goldman(),
                         ),
                       ),
