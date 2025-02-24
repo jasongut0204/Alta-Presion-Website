@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     // ✅ Load Video from Netlify (Local Asset)
-    _controller = VideoPlayerController.asset("assets/heart_pulse.mp4")
+    _controller = VideoPlayerController.asset("heart_pulse.mp4")
       ..initialize().then((_) {
         setState(() {});
         _controller.setLooping(true);
@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
   void _playAudio() async {
     try {
       if (!_isAudioPlaying) {
-        await _audioPlayer.setSource(AssetSource("assets/background_music.ogg"));
+        await _audioPlayer.setSource(AssetSource("background_music.ogg"));
         _audioPlayer.setReleaseMode(ReleaseMode.loop);
         await _audioPlayer.resume();
         setState(() {
