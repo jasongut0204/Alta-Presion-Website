@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'dart:math'; // Required for 3D rotation
 
 void main() {
   runApp(AltaPresionWebsite());
 }
 
 class AltaPresionWebsite extends StatelessWidget {
+  const AltaPresionWebsite({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,20 +22,24 @@ class AltaPresionWebsite extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   late VideoPlayerController _controller;
   late AudioPlayer _audioPlayer;
+  late AnimationController _animationController;
+  late Animation<double> _rotationAnimation;
   bool _isAudioPlaying = false;
 
   @override
   void initState() {
     super.initState();
 
-    // ✅ Load Video from Netlify (Local Asset)
+    // ✅ Load Video from Assets
     _controller = VideoPlayerController.asset("heart_pulse.mp4")
       ..initialize().then((_) {
         setState(() {});
@@ -41,6 +48,17 @@ class _HomePageState extends State<HomePage> {
       });
 
     _audioPlayer = AudioPlayer();
+
+    // 🔄 3D Rotation Animation
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 4), // Adjust speed of rotation
+    )..repeat(); // Loops indefinitely
+
+    _rotationAnimation = Tween<double>(
+      begin: 0,
+      end: 2 * pi, // 360 degrees rotation
+    ).animate(_animationController);
   }
 
   void _playAudio() async {
@@ -62,6 +80,7 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _controller.dispose();
     _audioPlayer.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -101,18 +120,28 @@ class _HomePageState extends State<HomePage> {
           SingleChildScrollView(
             child: Column(
               children: [
-                // 🏆 Logo at the Top Center
+                // 🏆 3D Rotating Logo at the Top Center
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
                     padding: EdgeInsets.all(screenWidth * 0.04),
-                    child: Image.asset(
-                      "assets/apLogo.png",
-                      height: screenWidth * 0.3,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Text(
-                          "Failed to load logo",
-                          style: TextStyle(color: Colors.red, fontSize: 16),
+                    child: AnimatedBuilder(
+                      animation: _rotationAnimation,
+                      builder: (context, child) {
+                        return Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.identity()
+                            ..rotateY(_rotationAnimation.value), // Rotate along Y-axis
+                          child: Image.asset(
+                            "assets/apLogo.png",
+                            height: screenWidth * 0.2,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Text(
+                                "Failed to load logo",
+                                style: TextStyle(color: Colors.red, fontSize: 16),
+                              );
+                            },
+                          ),
                         );
                       },
                     ),
@@ -124,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                 Center(
                   child: Column(
                     children: [
-                      Text(
+                      SelectableText(
                         "LA PRESIÓN SE SIENTE EN MAYAGUEZ...",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.goldman(
