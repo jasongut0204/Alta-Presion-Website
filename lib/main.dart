@@ -15,6 +15,7 @@ void main() {
         body: Container(
           width: double.infinity,
           height: double.infinity,
+          color: Colors.black, // ✅ Ensure black background
           child: AltaPresionWebsite(),
         ),
       ),
@@ -128,118 +129,120 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // 🎥 Background Video
-          FutureBuilder(
-            future: _initializeVideoPlayerFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                return Positioned.fill(
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    child: SizedBox(
-                      width: _controller.value.size.width,
-                      height: _controller.value.size.height,
-                      child: VideoPlayer(_controller),
-                    ),
-                  ),
-                );
-              } else {
-                return Center(
-                  child: CircularProgressIndicator(color: Colors.yellow),
-                );
-              }
-            },
-          ),
-
-          // 🔳 Overlay for better text visibility
-          Positioned.fill(
-            child: Container(color: Colors.black.withOpacity(0.3)),
-          ),
-
-          // 📜 Scrollable Content
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                // 🏆 3D Rotating Logo at the Top Center
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                    padding: EdgeInsets.all(screenWidth * 0.04),
-                    child: AnimatedBuilder(
-                      animation: _rotationAnimation,
-                      builder: (context, child) {
-                        return Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.identity()
-                            ..rotateY(_rotationAnimation.value), // Rotate along Y-axis
-                          child: Image.asset(
-                            "assets/apLogo.png",
-                            height: screenWidth < 600
-                                ? screenWidth * 0.4 // Bigger on phones
-                                : screenWidth * 0.2, // Normal on desktop
-                            errorBuilder: (context, error, stackTrace) {
-                              return Text(
-                                "Failed to load logo",
-                                style: TextStyle(color: Colors.red, fontSize: 16),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-
-                // 🔥 Animated Main Title
-                SizedBox(height: screenHeight / 4),
-                TweenAnimationBuilder<double>(
-                  duration: Duration(seconds: 7),
-                  curve: Curves.easeOut,
-                  tween: Tween<double>(begin: 0.01, end: 1.0),
-                  builder: (context, scale, child) {
-                    return Transform.scale(
-                      scale: scale,
-                      child: Text(
-                        "LA PRESIÓN SE SIENTE EN MAYAGUEZ...",
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.goldman(
-                          fontSize: screenWidth * 0.025,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          shadows: [
-                            Shadow(offset: Offset(-2, -2), color: Colors.yellow, blurRadius: 3),
-                            Shadow(offset: Offset(2, -2), color: Colors.yellow, blurRadius: 3),
-                            Shadow(offset: Offset(-2, 2), color: Colors.yellow, blurRadius: 3),
-                            Shadow(offset: Offset(2, 2), color: Colors.yellow, blurRadius: 3),
-                          ],
-                        ),
+      body: Container(
+        width: screenWidth,
+        height: screenHeight,
+        color: Colors.black, // ✅ Ensuring a black background
+        child: Stack(
+          children: [
+            // 🎥 Responsive Background Video
+            FutureBuilder(
+              future: _initializeVideoPlayerFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return Positioned.fill(
+                    child: FittedBox(
+                      fit: BoxFit.cover, // ✅ Ensures the video covers the whole screen
+                      child: SizedBox(
+                        width: screenWidth > screenHeight ? screenWidth : screenHeight * 1.5,
+                        height: screenHeight > screenWidth ? screenHeight : screenWidth * 1.5,
+                        child: VideoPlayer(_controller),
                       ),
-                    );
-                  },
-                ),
-                SizedBox(height: screenHeight * 0.05),
-
-                // 🎵 Play Music Button
-                ElevatedButton(
-                  onPressed: _playAudio,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.yellow,
-                    foregroundColor: Colors.black,
-                  ),
-                  child: Text("PLAY MUSIC", style: GoogleFonts.goldman(
-                    fontSize: screenWidth * 0.02,
-                    fontWeight: FontWeight.bold,  
-                  )),
-                  
-                ),
-
-                SizedBox(height: screenHeight * 0.5),
-              ],
+                    ),
+                  );
+                } else {
+                  return Center(
+                    child: CircularProgressIndicator(color: Colors.yellow),
+                  );
+                }
+              },
             ),
-          ),
-        ],
+
+            // 🔳 Overlay for better text visibility
+            Positioned.fill(
+              child: Container(color: Colors.black.withOpacity(0.3)),
+            ),
+
+            // 📜 Scrollable Content
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  // 🏆 3D Rotating Logo at the Top Center
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: EdgeInsets.all(screenWidth * 0.04),
+                      child: AnimatedBuilder(
+                        animation: _rotationAnimation,
+                        builder: (context, child) {
+                          return Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.identity()
+                              ..rotateY(_rotationAnimation.value) // Rotate along Y-axis
+                              ..rotateX(sin(_rotationAnimation.value) * 0.3), // Adds slight tilt
+                            child: Image.asset(
+                              "assets/apLogo.png",
+                              height: screenWidth < 600
+                                  ? screenWidth * 0.4 // Bigger on phones
+                                  : screenWidth * 0.2, // Normal on desktop
+                              errorBuilder: (context, error, stackTrace) {
+                                return Text(
+                                  "Failed to load logo",
+                                  style: TextStyle(color: Colors.red, fontSize: 16),
+                                );
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
+                  // 🔥 Animated Main Title
+                  SizedBox(height: screenHeight / 4),
+                  TweenAnimationBuilder<double>(
+                    duration: Duration(seconds: 6),
+                    curve: Curves.easeOut,
+                    tween: Tween<double>(begin: 0.01, end: 1.0),
+                    builder: (context, scale, child) {
+                      return Transform.scale(
+                        scale: scale,
+                        child: Text(
+                          "LA PRESIÓN SE SIENTE EN MAYAGUEZ...",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.goldman(
+                            fontSize: screenWidth * 0.03,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            shadows: [
+                              Shadow(offset: Offset(-2, -2), color: Colors.yellow, blurRadius: 3),
+                              Shadow(offset: Offset(2, -2), color: Colors.yellow, blurRadius: 3),
+                              Shadow(offset: Offset(-2, 2), color: Colors.yellow, blurRadius: 3),
+                              Shadow(offset: Offset(2, 2), color: Colors.yellow, blurRadius: 3),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: screenHeight * 0.05),
+
+                  // 🎵 Play Music Button
+                  ElevatedButton(
+                    onPressed: _playAudio,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.yellow,
+                      foregroundColor: Colors.black,
+                    ),
+                    child: Text("PLAY MUSIC", style: GoogleFonts.goldman()),
+                  ),
+
+                  SizedBox(height: screenHeight * 0.5),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
