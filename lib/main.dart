@@ -200,7 +200,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   // 🔥 Animated Main Title
                   SizedBox(height: screenHeight / 4),
                   TweenAnimationBuilder<double>(
-                    duration: Duration(seconds: 6),
+                    duration: Duration(seconds: 5),
                     curve: Curves.easeOut,
                     tween: Tween<double>(begin: 0.01, end: 1.0),
                     builder: (context, scale, child) {
@@ -219,8 +219,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                               Shadow(offset: Offset(-2, 2), color: Colors.yellow, blurRadius: 3),
                               Shadow(offset: Offset(2, 2), color: Colors.yellow, blurRadius: 3),
                             ],
-                          ),
-                        ),
+                          ),  
+                        ), 
                       );
                     },
                   ),
