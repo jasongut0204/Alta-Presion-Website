@@ -178,12 +178,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           return Transform(
                             alignment: Alignment.center,
                             transform: Matrix4.identity()
-                              ..rotateY(_rotationAnimation.value) // Rotate along Y-axis
-                              ..rotateX(sin(_rotationAnimation.value) * 0.3), // Adds slight tilt
+                              ..rotateY(_rotationAnimation.value), // Rotate along Y-axis
                             child: Image.asset(
                               "assets/apLogo.png",
                               height: screenWidth < 600
-                                  ? screenWidth * 0.4 // Bigger on phones
+                                  ? screenWidth * 0.5 // Bigger on phones
                                   : screenWidth * 0.2, // Normal on desktop
                               errorBuilder: (context, error, stackTrace) {
                                 return Text(
@@ -211,7 +210,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           "LA PRESIÓN SE SIENTE EN MAYAGUEZ...",
                           textAlign: TextAlign.center,
                           style: GoogleFonts.goldman(
-                            fontSize: screenWidth * 0.03,
+                            fontSize: screenWidth * 0.04,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                             shadows: [
