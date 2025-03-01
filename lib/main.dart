@@ -2,10 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'dart:math'; // Required for 3D rotation
+import 'dart:html' as html; // Required for JS interaction in Flutter Web
+import 'dart:math'; // Required for 3D rotation effect
 
 void main() {
-  runApp(AltaPresionWebsite());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Alta Presión',
+      home: Scaffold(
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          child: AltaPresionWebsite(),
+        ),
+      ),
+    ),
+  );
 }
 
 class AltaPresionWebsite extends StatelessWidget {
@@ -13,11 +27,7 @@ class AltaPresionWebsite extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Alta Presión',
-      home: HomePage(),
-    );
+    return HomePage();
   }
 }
 
@@ -34,31 +44,53 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   late AnimationController _animationController;
   late Animation<double> _rotationAnimation;
   bool _isAudioPlaying = false;
+  late Future<void> _initializeVideoPlayerFuture;
 
   @override
   void initState() {
     super.initState();
 
-    // ✅ Load Video from Assets
-    _controller = VideoPlayerController.asset("heart_pulse.mp4")
-      ..initialize().then((_) {
+    _controller = VideoPlayerController.asset("assets/heart_pulse.mp4");
+
+    _initializeVideoPlayerFuture = _controller.initialize().then((_) {
+      if (mounted) {
         setState(() {});
         _controller.setLooping(true);
+        _controller.setVolume(0);
         _controller.play();
-      });
+      }
+    }).catchError((error) {
+      print("❌ Error initializing video: $error");
+    });
 
     _audioPlayer = AudioPlayer();
 
-    // 🔄 3D Rotation Animation
+    // 🔄 3D Rotating Logo Animation
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 4), // Adjust speed of rotation
-    )..repeat(); // Loops indefinitely
+      duration: Duration(seconds: 4),
+    )..repeat();
 
     _rotationAnimation = Tween<double>(
       begin: 0,
-      end: 2 * pi, // 360 degrees rotation
+      end: 2 * pi,
     ).animate(_animationController);
+
+    // ✅ Ensure video plays when the page regains focus
+    html.window.addEventListener("visibilitychange", (_) {
+      if (html.document.visibilityState == "visible" && !_controller.value.isPlaying) {
+        _controller.play();
+        print("🔥 Video resumed after tab switch");
+      }
+    });
+
+    // ✅ Force video to start after short delay
+    Future.delayed(Duration(milliseconds: 300), () {
+      if (mounted && !_controller.value.isPlaying) {
+        _controller.play();
+        print("🚀 Forced video playback");
+      }
+    });
   }
 
   void _playAudio() async {
@@ -70,9 +102,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         setState(() {
           _isAudioPlaying = true;
         });
+
+        // ✅ Ensure video stays playing when audio starts
+        if (_controller.value.isInitialized && !_controller.value.isPlaying) {
+          _controller.play();
+          print("🔥 Restarted video after audio started");
+        }
       }
     } catch (e) {
-      print("Error loading audio: $e");
+      print("❌ Error loading audio: $e");
     }
   }
 
@@ -92,23 +130,27 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     return Scaffold(
       body: Stack(
         children: [
-          // 🔴 Bright Red Background
-          Positioned.fill(
-            child: Container(color: Colors.red),
-          ),
-
-          // 🎥 Background Video (Using Local Asset)
-          Positioned.fill(
-            child: _controller.value.isInitialized
-                ? FittedBox(
+          // 🎥 Background Video
+          FutureBuilder(
+            future: _initializeVideoPlayerFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return Positioned.fill(
+                  child: FittedBox(
                     fit: BoxFit.cover,
                     child: SizedBox(
                       width: _controller.value.size.width,
                       height: _controller.value.size.height,
                       child: VideoPlayer(_controller),
                     ),
-                  )
-                : Container(color: Colors.black),
+                  ),
+                );
+              } else {
+                return Center(
+                  child: CircularProgressIndicator(color: Colors.yellow),
+                );
+              }
+            },
           ),
 
           // 🔳 Overlay for better text visibility
@@ -134,7 +176,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                             ..rotateY(_rotationAnimation.value), // Rotate along Y-axis
                           child: Image.asset(
                             "assets/apLogo.png",
-                            height: screenWidth * 0.2,
+                            height: screenWidth < 600
+                                ? screenWidth * 0.4 // Bigger on phones
+                                : screenWidth * 0.2, // Normal on desktop
                             errorBuilder: (context, error, stackTrace) {
                               return Text(
                                 "Failed to load logo",
@@ -148,16 +192,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                   ),
                 ),
 
-                // 🔥 Main Title
+                // 🔥 Animated Main Title
                 SizedBox(height: screenHeight / 4),
-                Center(
-                  child: Column(
-                    children: [
-                      SelectableText(
+                TweenAnimationBuilder<double>(
+                  duration: Duration(seconds: 7),
+                  curve: Curves.easeOut,
+                  tween: Tween<double>(begin: 0.01, end: 1.0),
+                  builder: (context, scale, child) {
+                    return Transform.scale(
+                      scale: scale,
+                      child: Text(
                         "LA PRESIÓN SE SIENTE EN MAYAGUEZ...",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.goldman(
-                          fontSize: screenWidth * 0.05,
+                          fontSize: screenWidth * 0.025,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                           shadows: [
@@ -168,33 +216,25 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           ],
                         ),
                       ),
-                      SizedBox(height: screenHeight * 0.05),
+                    );
+                  },
+                ),
+                SizedBox(height: screenHeight * 0.05),
 
-                      // 🎵 Play Music Button
-                      ElevatedButton(
-                        onPressed: _playAudio,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellow,
-                          foregroundColor: Colors.black,
-                          textStyle: TextStyle(
-                            fontSize: screenWidth * 0.02,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: screenWidth * 0.02,
-                            vertical: screenHeight * 0.01,
-                          ),
-                        ),
-                        child: Text(
-                          "PLAY MUSIC",
-                          style: GoogleFonts.goldman(),
-                        ),
-                      ),
-                    ],
+                // 🎵 Play Music Button
+                ElevatedButton(
+                  onPressed: _playAudio,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.yellow,
+                    foregroundColor: Colors.black,
                   ),
+                  child: Text("PLAY MUSIC", style: GoogleFonts.goldman(
+                    fontSize: screenWidth * 0.02,
+                    fontWeight: FontWeight.bold,  
+                  )),
+                  
                 ),
 
-                // Extra Space for Scrolling
                 SizedBox(height: screenHeight * 0.5),
               ],
             ),

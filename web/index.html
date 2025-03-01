@@ -1,40 +1,90 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+  
+    #flutter_app {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+  
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+  <base href="/" />
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8" />
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+  <meta name="description" content="A Flutter Web Element embedding demo." />
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
-
+  <!-- ✅ Allow full zoom & mobile responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="alta_presion">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Flutter Element embedding" />
+  <link rel="apple-touch-icon" href="icons/Icon-192.png" />
+  <link rel="preload" as="image" href="icons/Icon-maskable-512.png" />
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>Element embedding</title>
+  <link rel="manifest" href="manifest.json" />
 
-  <title>alta_presion</title>
-  <link rel="manifest" href="manifest.json">
+  <!-- ✅ Add Flutter initialization script -->
+  <script src="flutter.js" defer></script>
+
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+
+  <!-- ✅ This is where Flutter will be rendered -->
+  <div id="flutter_app"></div>
+
+  <script>
+      window.addEventListener("load", function (ev) {
+        // Embed flutter into div#flutter_app
+        let target = document.querySelector("#flutter_app");
+        _flutter.loader.loadEntrypoint({
+          onEntrypointLoaded: async function (engineInitializer) {
+            let appRunner = await engineInitializer.initializeEngine({
+              hostElement: target,
+            });
+            await appRunner.runApp();
+          },
+        });
+      });
+  </script>
+
+<script>
+  window.addEventListener("load", function () {
+    let videos = document.getElementsByTagName("video");
+    for (let video of videos) {
+      video.muted = true; 
+      video.play().catch(error => console.log("❌ Autoplay blocked:", error));
+    }
+  });
+
+  document.addEventListener("visibilitychange", function() {
+    let videos = document.getElementsByTagName("video");
+    for (let video of videos) {
+      if (document.visibilityState === "visible" && video.paused) {
+        video.play();
+        console.log("🔥 Video restarted after tab switch");
+      }
+    }
+  });
+</script>
+
+
 </body>
 </html>
