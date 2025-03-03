@@ -73,26 +73,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     ).animate(_animationController);
   }
 
-  void _boostRotation() {
-    _animationController.duration = Duration(milliseconds: 300);
-    _animationController.repeat();
-
-    Future.delayed(Duration(milliseconds: 500), () {
-      if (mounted) {
-        _animationController.animateTo(
-          1.0,
-          duration: Duration(seconds: 1),
-          curve: Curves.decelerate,
-        ).then((_) {
-          if (mounted) {
-            _animationController.duration = Duration(seconds: 4);
-            _animationController.repeat();
-          }
-        });
-      }
-    });
-  }
-
   void _playAudio() async {
     try {
       if (!_isAudioPlaying) {
@@ -126,36 +106,37 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       builder: (context, constraints) {
         double screenWidth = constraints.maxWidth;
         double screenHeight = constraints.maxHeight;
+        
+        // Video Size (Fixed, not scaling)
+        double videoWidth = 600; // Adjust this based on the actual video size
+        double videoHeight = 400;
 
         return Scaffold(
           body: Stack(
             children: [
-              // 🎥 Background Video
-              FutureBuilder(
-                future: _initializeVideoPlayerFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    return Positioned.fill(
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: max(screenWidth, screenHeight * 1.5),
-                          height: max(screenHeight, screenWidth * 1.5),
-                          child: VideoPlayer(_controller),
-                        ),
-                      ),
-                    );
-                  } else {
-                    return Center(
-                      child: CircularProgressIndicator(color: Colors.yellow),
-                    );
-                  }
-                },
+              // 🔳 Black Background
+              Positioned.fill(
+                child: Container(color: Colors.black),
               ),
 
-              // 🔳 Dark Overlay
-              Positioned.fill(
-                child: Container(color: Colors.black.withOpacity(0.3)),
+              // 🎥 Centered Video (Fixed Size)
+              Center(
+                child: FutureBuilder(
+                  future: _initializeVideoPlayerFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return SizedBox(
+                        width: videoWidth,
+                        height: videoHeight,
+                        child: VideoPlayer(_controller),
+                      );
+                    } else {
+                      return Center(
+                        child: CircularProgressIndicator(color: Colors.yellow),
+                      );
+                    }
+                  },
+                ),
               ),
 
               // 📜 Scrollable Content
@@ -168,7 +149,25 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       child: Padding(
                         padding: EdgeInsets.all(screenWidth * 0.04),
                         child: GestureDetector(
-                          onTap: _boostRotation,
+                          onTap: () {
+                            _animationController.duration = Duration(milliseconds: 300);
+                            _animationController.repeat();
+
+                            Future.delayed(Duration(milliseconds: 500), () {
+                              if (mounted) {
+                                _animationController.animateTo(
+                                  1.0,
+                                  duration: Duration(seconds: 1),
+                                  curve: Curves.decelerate,
+                                ).then((_) {
+                                  if (mounted) {
+                                    _animationController.duration = Duration(seconds: 4);
+                                    _animationController.repeat();
+                                  }
+                                });
+                              }
+                            });
+                          },
                           child: AnimatedBuilder(
                             animation: _rotationAnimation,
                             builder: (context, child) {

@@ -48,7 +48,6 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
 
     _scrollToBottom();
 
-    // ✅ Show bot "typing" effect
     setState(() {
       isBotTyping = true;
     });
@@ -56,7 +55,7 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
     Future.delayed(Duration(seconds: 1), () {
       setState(() {
         isBotTyping = false;
-        chatMessages.add({"bot": ""}); // Empty message for typewriter effect
+        chatMessages.add({"bot": ""});
       });
 
       _scrollToBottom();
@@ -68,10 +67,9 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
     });
   }
 
-  /// **Simulates AI typing effect letter by letter**
   void _simulateTyping(int messageIndex, String fullText) async {
     for (int i = 0; i <= fullText.length; i++) {
-      await Future.delayed(Duration(milliseconds: 50)); // Typing speed
+      await Future.delayed(Duration(milliseconds: 50));
       setState(() {
         chatMessages[messageIndex]["bot"] = fullText.substring(0, i);
       });
@@ -79,7 +77,6 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
     }
   }
 
-  /// **Scrolls chat to the bottom**
   void _scrollToBottom() {
     Future.delayed(Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
@@ -92,7 +89,6 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
     });
   }
 
-  /// **Detects language & returns an AI response without repetition**
   String getAIResponse(String input) {
     input = input.toLowerCase();
     bool isSpanish = detectSpanish(input);
@@ -102,48 +98,55 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
         isSpanish ? usedSpanishResponses : usedEnglishResponses;
 
     if (usedResponses.length == availableResponses.length) {
-      usedResponses.clear(); // Reset when all responses have been used
+      usedResponses.clear();
     }
 
-    // Get an unused response
     String response;
     do {
       response = availableResponses[Random().nextInt(availableResponses.length)];
     } while (usedResponses.contains(response));
 
-    usedResponses.add(response); // Track used responses
-
+    usedResponses.add(response);
     return response;
   }
 
-  /// **Improved Spanish detection with probability-based approach**
   bool detectSpanish(String input) {
     final List<String> spanishKeywords = [
       "quién", "cuando", "presión", "señal", "dónde",
       "música", "bajo", "realidad", "tú", "esto",
-      "alta", "mirando", "te", "seguir","como","eres","que","haces",
-      "donde","estas","porque","cuanto","cuantos","cual","cualquier"
+      "alta", "mirando", "te", "seguir", "como", "eres",
+      "que", "haces", "donde", "estas", "porque", "cuanto",
+      "cuantos", "cual", "cualquier"
     ];
     final List<String> englishKeywords = [
       "who", "when", "pressure", "signal", "where",
       "music", "low", "reality", "you", "this",
-      "high", "watching", "following","how","are","what","do", "where",
-      "are","you","why","how","many","which","any"
+      "high", "watching", "following", "how", "are",
+      "what", "do", "why", "how", "many", "which", "any"
     ];
 
-    int spanishCount = spanishKeywords.where((word) => input.contains(word)).length;
-    int englishCount = englishKeywords.where((word) => input.contains(word)).length;
+    int spanishCount =
+        spanishKeywords.where((word) => input.contains(word)).length;
+    int englishCount =
+        englishKeywords.where((word) => input.contains(word)).length;
 
-    return spanishCount > englishCount; // Return whichever has more hits
+    return spanishCount > englishCount;
   }
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    double chatWidth = screenWidth < 600 ? screenWidth * 0.85 : 300;
+    double chatHeight = screenHeight < 700 ? screenHeight * 0.5 : 400;
+    double chatPadding = screenWidth < 600 ? 10 : 30;
+
     return Stack(
       children: [
         Positioned(
-          bottom: 30,
-          right: 30,
+          bottom: chatPadding,
+          right: chatPadding,
           child: FloatingActionButton(
             onPressed: () {
               setState(() {
@@ -165,11 +168,11 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
 
         if (isChatOpen)
           Positioned(
-            bottom: 90,
-            right: 20,
+            bottom: chatPadding + 60,
+            right: chatPadding,
             child: Container(
-              width: 300,
-              height: 400,
+              width: chatWidth,
+              height: chatHeight,
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(15),
@@ -182,7 +185,7 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
                     child: Text(
                       "AI TERMINAL v3.22",
                       style: GoogleFonts.orbitron(
-                        fontSize: 14,
+                        fontSize: screenWidth < 600 ? 12 : 14,
                         color: Colors.yellow,
                         fontWeight: FontWeight.bold,
                       ),
@@ -190,29 +193,25 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
                   ),
                   Divider(color: Colors.yellow),
 
-                  // **Chat Messages**
                   Expanded(
                     child: ListView(
                       controller: _scrollController,
                       children: [
                         for (var msg in chatMessages)
-                          ListTile(
-                            title: Text(msg.values.first,
-                                style: GoogleFonts.orbitron(
-                                  fontSize: 12,
-                                  color: msg.containsKey("user") ? Colors.yellow : Colors.white,
-                                )),
-                          ),
-                        if (isBotTyping)
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
+                          Align(
+                            alignment: msg.containsKey("user")
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 4, horizontal: 10),
                               child: Text(
-                                "...",
+                                msg.values.first,
                                 style: GoogleFonts.orbitron(
-                                  fontSize: 12,
-                                  color: Colors.grey,
+                                  fontSize: screenWidth < 600 ? 14 : 16,
+                                  color: msg.containsKey("user")
+                                      ? Colors.yellow
+                                      : Colors.white,
                                 ),
                               ),
                             ),
@@ -221,7 +220,6 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
                     ),
                   ),
 
-                  // **Input Field & Send Button**
                   Container(
                     padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -248,7 +246,8 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
                         ),
                         IconButton(
                           icon: Icon(Icons.send, color: Colors.yellow),
-                          onPressed: () => handleUserMessage(_messageController.text),
+                          onPressed: () =>
+                              handleUserMessage(_messageController.text),
                         ),
                       ],
                     ),

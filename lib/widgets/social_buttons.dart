@@ -16,21 +16,27 @@ class SocialButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    // ✅ Adjust button & logo size dynamically
+    double buttonSize = screenWidth < 600 ? 40 : (screenWidth < 1000 ? 50 : 60);
+    double paddingSize = screenWidth < 600 ? 5 : 10;
+
     return Positioned(
-      top: 20, // ⬆️ Align to top
-      left: 20, // ⬅️ Align to left
-      child: Row( // 🔄 Use Row instead of Column to place logos side-by-side
+      top: paddingSize + 10, // Adjust positioning
+      left: paddingSize + 10,
+      child: Row(
         children: [
-          _buildSocialButton("assets/ig_logo.png", _openInstagram), // Instagram
-          SizedBox(width: 10), // Space between logos
-          _buildSocialButton("assets/tt_logo.png", _openTikTok), // TikTok
+          _buildSocialButton("assets/ig_logo.png", _openInstagram, buttonSize, paddingSize),
+          SizedBox(width: paddingSize),
+          _buildSocialButton("assets/tt_logo.png", _openTikTok, buttonSize, paddingSize),
         ],
       ),
     );
   }
 
-  // Social Media Button UI
-  Widget _buildSocialButton(String assetPath, VoidCallback onTap) {
+  // ✅ Fully Responsive Social Media Button
+  Widget _buildSocialButton(String assetPath, VoidCallback onTap, double size, double padding) {
     return GestureDetector(
       onTap: onTap,
       child: MouseRegion(
@@ -38,16 +44,19 @@ class SocialButtons extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            color: Colors.black.withOpacity(0.2), // Semi-transparent background
+            color: Colors.black.withOpacity(0.2),
           ),
-          padding: EdgeInsets.all(8),
-          child: Image.asset(
-            assetPath,
-            width: 60, // Keep the size
-            height: 60,
-            errorBuilder: (context, error, stackTrace) {
-              return Icon(Icons.error, color: Colors.red, size: 40);
-            },
+          padding: EdgeInsets.all(padding),
+          child: SizedBox(
+            width: size, // ✅ Forces proper size
+            height: size,
+            child: Image.asset(
+              assetPath,
+              fit: BoxFit.contain, // ✅ Ensures it scales properly
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(Icons.error, color: Colors.red, size: size * 0.8);
+              },
+            ),
           ),
         ),
       ),
