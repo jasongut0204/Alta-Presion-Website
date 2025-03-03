@@ -11,7 +11,7 @@ class GlitchingTitle extends StatefulWidget {
 }
 
 class _GlitchingTitleState extends State<GlitchingTitle> {
-  final String originalText = "LA PRESIÓN SE SIENTE EN MAYAGÜEZ";
+  final String originalText = "LA PRESIÓN SE SIENTE EN MAYAGÜEZ...";
   final String glitchCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890@#\$%&*?!";
   String currentText = "";
   late Timer _timer;

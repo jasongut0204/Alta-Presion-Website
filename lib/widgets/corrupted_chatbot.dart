@@ -141,15 +141,16 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
     double chatWidth = screenWidth < 600 ? screenWidth * 0.85 : 300;
     double chatHeight = screenHeight < 700 ? screenHeight * 0.5 : 400;
 
-    // ✅ Adjust chatbot position so it's visible on all screens
     double chatBottomPadding = screenHeight < 700 ? screenHeight * 0.25 : 90;
-    double chatFloatingPadding = screenHeight < 700 ? screenHeight * 0.20 : 30;
+    double chatFloatingPadding = screenHeight < 700 ? screenHeight * 0.12 : 30;
+
+    double buttonSize = screenWidth < 600 ? 50 : 60; // ✅ Floating button scales
 
     return Stack(
       children: [
         Positioned(
-          bottom: chatFloatingPadding, // ✅ Adjusted for small screens
-          right: 20,
+          bottom: chatFloatingPadding,
+          right: screenWidth < 400 ? 10 : 20,
           child: FloatingActionButton(
             onPressed: () {
               setState(() {
@@ -165,13 +166,18 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
             child: Icon(
               isChatOpen ? Icons.close : Icons.chat_bubble_outline,
               color: Colors.yellow,
+              size: buttonSize * 0.5,
             ),
+            shape: CircleBorder(),
+            elevation: 5,
+            heroTag: "chatbot_fab",
+            mini: screenWidth < 400,
           ),
         ),
 
         if (isChatOpen)
           Positioned(
-            bottom: chatBottomPadding, // ✅ Moves up when screen is small
+            bottom: chatBottomPadding,
             right: 20,
             child: Container(
               width: chatWidth,
@@ -199,31 +205,29 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
                   Expanded(
                     child: ListView(
                       controller: _scrollController,
-                      children: [
-                        for (var msg in chatMessages)
-                          Align(
-                            alignment: msg.containsKey("user")
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 4, horizontal: 10),
-                              child: Text(
-                                msg.values.first,
-                                style: GoogleFonts.orbitron(
-                                  fontSize: screenWidth < 600 ? 14 : 16,
-                                  color: msg.containsKey("user")
-                                      ? Colors.yellow
-                                      : Colors.white,
-                                ),
+                      children: chatMessages.map((msg) {
+                        return Align(
+                          alignment: msg.containsKey("user")
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+                            child: Text(
+                              msg.values.first,
+                              style: GoogleFonts.orbitron(
+                                fontSize: screenWidth < 600 ? 14 : 16,
+                                color: msg.containsKey("user") ? Colors.yellow : Colors.white,
                               ),
                             ),
                           ),
-                      ],
+                        );
+                      }).toList(),
                     ),
                   ),
 
+                  // ✅ Fixed input area with proper height
                   Container(
+                    height: 50,
                     padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Colors.black,
@@ -249,8 +253,7 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
                         ),
                         IconButton(
                           icon: Icon(Icons.send, color: Colors.yellow),
-                          onPressed: () =>
-                              handleUserMessage(_messageController.text),
+                          onPressed: () => handleUserMessage(_messageController.text),
                         ),
                       ],
                     ),
