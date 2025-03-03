@@ -12,11 +12,31 @@ class CorruptedChatbot extends StatefulWidget {
 
 class _CorruptedChatbotState extends State<CorruptedChatbot> {
   bool isChatOpen = false;
-  TextEditingController _messageController = TextEditingController();
-  FocusNode _inputFocusNode = FocusNode();
+  final TextEditingController _messageController = TextEditingController();
+  final FocusNode _inputFocusNode = FocusNode();
   List<Map<String, String>> chatMessages = [];
   final ScrollController _scrollController = ScrollController();
   bool isBotTyping = false;
+  List<String> usedSpanishResponses = [];
+  List<String> usedEnglishResponses = [];
+
+  final List<String> spanishResponses = [
+    "No deberías estar aquí...",
+    "La señal se está desmoronando...",
+    "Alguien te sigue...",
+    "Alta Presión se acerca...",
+    "Esto no es real...",
+    "Código activado: 019-X..."
+  ];
+
+  final List<String> englishResponses = [
+    "You shouldn't be here...",
+    "The signal is breaking...",
+    "Someone is watching...",
+    "Alta Presión is near...",
+    "This is not real...",
+    "Code activated: 019-X..."
+  ];
 
   void handleUserMessage(String message) {
     if (message.trim().isEmpty) return;
@@ -51,7 +71,7 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
   /// **Simulates AI typing effect letter by letter**
   void _simulateTyping(int messageIndex, String fullText) async {
     for (int i = 0; i <= fullText.length; i++) {
-      await Future.delayed(Duration(milliseconds: 100)); // Typing speed
+      await Future.delayed(Duration(milliseconds: 50)); // Typing speed
       setState(() {
         chatMessages[messageIndex]["bot"] = fullText.substring(0, i);
       });
@@ -72,43 +92,49 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
     });
   }
 
-  /// **Detects language & returns an AI response**
+  /// **Detects language & returns an AI response without repetition**
   String getAIResponse(String input) {
     input = input.toLowerCase();
     bool isSpanish = detectSpanish(input);
-    final random = Random();
+    List<String> availableResponses =
+        isSpanish ? spanishResponses : englishResponses;
+    List<String> usedResponses =
+        isSpanish ? usedSpanishResponses : usedEnglishResponses;
 
-    final List<String> spanishResponses = [
-      "No deberías estar aquí...",
-      "La señal se está desmoronando...",
-      "Alguien te sigue...",
-      "Alta Presión se acerca...",
-      "Esto no es real...",
-      "Código activado: 019-X..."
-    ];
+    if (usedResponses.length == availableResponses.length) {
+      usedResponses.clear(); // Reset when all responses have been used
+    }
 
-    final List<String> englishResponses = [
-      "You shouldn't be here...",
-      "The signal is breaking...",
-      "Someone is watching...",
-      "Alta Presion is near...",
-      "This is not real...",
-      "Code activated: 019-X..."
-    ];
+    // Get an unused response
+    String response;
+    do {
+      response = availableResponses[Random().nextInt(availableResponses.length)];
+    } while (usedResponses.contains(response));
 
-    return isSpanish
-        ? spanishResponses[random.nextInt(spanishResponses.length)]
-        : englishResponses[random.nextInt(englishResponses.length)];
+    usedResponses.add(response); // Track used responses
+
+    return response;
   }
 
+  /// **Improved Spanish detection with probability-based approach**
   bool detectSpanish(String input) {
-    final List<String> spanishWords = ["quién", "cuando", "presión", "señal", "dónde", "música", "bajo", "realidad"];
-    for (String word in spanishWords) {
-      if (input.contains(word)) {
-        return true;
-      }
-    }
-    return false;
+    final List<String> spanishKeywords = [
+      "quién", "cuando", "presión", "señal", "dónde",
+      "música", "bajo", "realidad", "tú", "esto",
+      "alta", "mirando", "te", "seguir","como","eres","que","haces",
+      "donde","estas","porque","cuanto","cuantos","cual","cualquier"
+    ];
+    final List<String> englishKeywords = [
+      "who", "when", "pressure", "signal", "where",
+      "music", "low", "reality", "you", "this",
+      "high", "watching", "following","how","are","what","do", "where",
+      "are","you","why","how","many","which","any"
+    ];
+
+    int spanishCount = spanishKeywords.where((word) => input.contains(word)).length;
+    int englishCount = englishKeywords.where((word) => input.contains(word)).length;
+
+    return spanishCount > englishCount; // Return whichever has more hits
   }
 
   @override
@@ -171,7 +197,7 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
                       children: [
                         for (var msg in chatMessages)
                           ListTile(
-                            title: Text(msg.values.first!,
+                            title: Text(msg.values.first,
                                 style: GoogleFonts.orbitron(
                                   fontSize: 12,
                                   color: msg.containsKey("user") ? Colors.yellow : Colors.white,

@@ -21,9 +21,9 @@ class SocialButtons extends StatelessWidget {
       left: 20, // ⬅️ Align to left
       child: Row( // 🔄 Use Row instead of Column to place logos side-by-side
         children: [
-          _buildSocialButton("ig_logo.png", _openInstagram), // Instagram
+          _buildSocialButton("assets/ig_logo.png", _openInstagram), // Instagram
           SizedBox(width: 10), // Space between logos
-          _buildSocialButton("tt_logo.png", _openTikTok), // TikTok
+          _buildSocialButton("assets/tt_logo.png", _openTikTok), // TikTok
         ],
       ),
     );
