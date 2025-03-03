@@ -140,13 +140,16 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
 
     double chatWidth = screenWidth < 600 ? screenWidth * 0.85 : 300;
     double chatHeight = screenHeight < 700 ? screenHeight * 0.5 : 400;
-    double chatPadding = screenWidth < 600 ? 10 : 30;
+
+    // ✅ Adjust chatbot position so it's visible on all screens
+    double chatBottomPadding = screenHeight < 700 ? screenHeight * 0.25 : 90;
+    double chatFloatingPadding = screenHeight < 700 ? screenHeight * 0.20 : 30;
 
     return Stack(
       children: [
         Positioned(
-          bottom: chatPadding,
-          right: chatPadding,
+          bottom: chatFloatingPadding, // ✅ Adjusted for small screens
+          right: 20,
           child: FloatingActionButton(
             onPressed: () {
               setState(() {
@@ -168,8 +171,8 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
 
         if (isChatOpen)
           Positioned(
-            bottom: chatPadding + 60,
-            right: chatPadding,
+            bottom: chatBottomPadding, // ✅ Moves up when screen is small
+            right: 20,
             child: Container(
               width: chatWidth,
               height: chatHeight,

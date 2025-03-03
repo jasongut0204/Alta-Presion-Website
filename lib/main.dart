@@ -4,6 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:alta_presion/widgets/corrupted_chatbot.dart';
 import 'package:alta_presion/widgets/social_buttons.dart';
+import 'package:alta_presion/widgets/glitchy_name.dart';
+import 'package:alta_presion/widgets/glitching_title.dart'; 
+import 'package:alta_presion/widgets/loading_widget.dart'; 
 import 'dart:math';
 
 void main() {
@@ -106,10 +109,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       builder: (context, constraints) {
         double screenWidth = constraints.maxWidth;
         double screenHeight = constraints.maxHeight;
-        
+
         // Video Size (Fixed, not scaling)
-        double videoWidth = 600; // Adjust this based on the actual video size
-        double videoHeight = 400;
+        double videoWidth = screenWidth * 0.6; // Scale relative to screen
+        double videoHeight = screenHeight * 0.4;
 
         return Scaffold(
           body: Stack(
@@ -191,33 +194,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       ),
                     ),
 
-                    // 🔥 Animated Main Title
+                    // 🔥 Glitching Title Text
                     SizedBox(height: screenHeight * 0.05),
-                    TweenAnimationBuilder<double>(
-                      duration: Duration(seconds: 5),
-                      curve: Curves.easeOut,
-                      tween: Tween<double>(begin: 0.01, end: 1.0),
-                      builder: (context, scale, child) {
-                        return Transform.scale(
-                          scale: scale,
-                          child: Text(
-                            "LA PRESIÓN SE SIENTE EN MAYAGÜEZ...",
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.goldman(
-                              fontSize: screenWidth * 0.04,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              shadows: [
-                                Shadow(offset: Offset(-2, -2), color: Colors.yellow, blurRadius: 3),
-                                Shadow(offset: Offset(2, -2), color: Colors.yellow, blurRadius: 3),
-                                Shadow(offset: Offset(-2, 2), color: Colors.yellow, blurRadius: 3),
-                                Shadow(offset: Offset(2, 2), color: Colors.yellow, blurRadius: 3),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    GlitchingTitle(), // ✅ Glitching Title Widget
+
                     SizedBox(height: screenHeight * 0.03),
 
                     // 🎵 Play Music Button
@@ -228,18 +208,22 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         foregroundColor: Colors.black,
                       ),
                       child: Text("PLAY MUSIC", style: GoogleFonts.goldman(
-                        fontSize: screenWidth * 0.01,
+                        fontSize: screenWidth * 0.02,
                         fontWeight: FontWeight.bold,
                       )),
                     ),
 
-                    SizedBox(height: screenHeight * 0.2),
+                    SizedBox(height: screenHeight * 0.01),
+                    SizedBox(height: screenHeight * 0.4), // Space before loading
+                    LoadingWidget(), // 🔥 "LOADING..." Animated Dots
                   ],
                 ),
               ),
 
+              // 🕶 Other Widgets
               CorruptedChatbot(),
               SocialButtons(),
+              GlitchyName(), // ✅ Glitchy Name (Top Right)
             ],
           ),
         );
