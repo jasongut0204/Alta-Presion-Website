@@ -141,15 +141,16 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
     double chatWidth = screenWidth < 600 ? screenWidth * 0.85 : 300;
     double chatHeight = screenHeight < 700 ? screenHeight * 0.5 : 400;
 
-    double chatBottomPadding = screenHeight < 700 ? screenHeight * 0.25 : 90;
-    double chatFloatingPadding = screenHeight < 700 ? screenHeight * 0.12 : 30;
+    double chatBottomPadding = isChatOpen ? screenHeight * 0.35 : screenHeight * 0.2; // Lower chat when open
+    double buttonBottomPadding = screenHeight * 0.25; // Keep FAB accessible
 
-    double buttonSize = screenWidth < 600 ? 50 : 60; // ✅ Floating button scales
+    double buttonSize = screenWidth < 600 ? 50 : 60; // Floating button scales
 
     return Stack(
       children: [
+        // Floating Button (Always Accessible)
         Positioned(
-          bottom: chatFloatingPadding,
+          bottom: buttonBottomPadding,
           right: screenWidth < 400 ? 10 : 20,
           child: FloatingActionButton(
             onPressed: () {
@@ -163,18 +164,19 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
               });
             },
             backgroundColor: Colors.black,
+            shape: CircleBorder(),
+            elevation: 5,
+            heroTag: "chatbot_fab",
+            mini: screenWidth < 400,
             child: Icon(
               isChatOpen ? Icons.close : Icons.chat_bubble_outline,
               color: Colors.yellow,
               size: buttonSize * 0.5,
             ),
-            shape: CircleBorder(),
-            elevation: 5,
-            heroTag: "chatbot_fab",
-            mini: screenWidth < 400,
           ),
         ),
 
+        // Chat Window (Moves Lower when Open)
         if (isChatOpen)
           Positioned(
             bottom: chatBottomPadding,
@@ -225,17 +227,10 @@ class _CorruptedChatbotState extends State<CorruptedChatbot> {
                     ),
                   ),
 
-                  // ✅ Fixed input area with proper height
+                  // Input Field
                   Container(
                     height: 50,
                     padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(15),
-                        bottomRight: Radius.circular(15),
-                      ),
-                    ),
                     child: Row(
                       children: [
                         Expanded(
